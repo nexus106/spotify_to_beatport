@@ -11,10 +11,17 @@ import re
 from selenium import webdriver
 import chromedriver_binary
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException
 import time
+import random
+import string
+
+
+def randomname(n: int) -> str:
+   return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
 
 
 def spotify_playlist() -> None:
@@ -78,7 +85,7 @@ def beatport_search(driver: webdriver.chrome.webdriver.WebDriver) -> None:
         print(element)
 
 
-def beatport_playlist_create(driver: webdriver.chrome.webdriver.WebDriver, playlist_name: str, public: bool) -> None:
+def beatport_playlist_create(driver: webdriver.chrome.webdriver.WebDriver, playlist_name: str, public: bool) -> str:
     url: str = "https://www.beatport.com/account/login?next=/library/playlists/new"
     try:
         driver.get(url)
@@ -110,10 +117,28 @@ def beatport_playlist_create(driver: webdriver.chrome.webdriver.WebDriver, playl
         By.XPATH, '//*[@id="new-playlist"]/div/div/div[2]/div[2]/div/button[2]'
     ).click()
     # saveボタンをクリック
-
+    playlist_add_track = driver.find_elements(By.NAME, "Add Tracks")
+    playlist_url: str = "url"
+    if len(playlist_add_track) != 0:
+        playlist_url = driver.current_url
+    driver.find_element(
+        By.NAME, "Add Tracks"
+    ).click()
+    # Add Tracksボタンをクリック
+    driver.find_element(
+        By.XPATH, '//*[@id="__next"]/div[1]/div[2]/main/div[3]/div[3]/div[2]/div[2]/div/div[1]/div[3]'
+    ).click()
+    # Searchタブをクリック
+    driver.find_element(By.XPATH, '//*[@id="search-query"]').send_keys(
+        "cube", Keys.ENTER
+    )
+    testt = driver.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div[2]/main/div[3]/div[3]/div[2]/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div[2]/div/a')
+    print(testt.text)
+    testtt = driver.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div[2]/main/div[3]/div[3]/div[2]/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div[2]/div/div/div/a')
+    print(testtt.text)
 
     time.sleep(3)
-
+    return playlist_url
 
 
 
@@ -125,8 +150,8 @@ driver: webdriver.chrome.webdriver.WebDriver = webdriver.Chrome()
 driver.implicitly_wait(10)
 # 待ち時間を設定
 
-playlist_name: str = "test1"
-beatport_playlist_create(driver, playlist_name, False)
+playlist_name: str = randomname(10)
+print(beatport_playlist_create(driver, playlist_name, False))
 
 
 driver.quit()
